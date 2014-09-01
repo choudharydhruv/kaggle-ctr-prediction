@@ -1,0 +1,32 @@
+We are not disclosing the semantics of the features, but I can tell you that they fall in the following categories:
+
+    Publisher features, such as the domain of the url where the ad was displayed;
+    Advertiser features (advertiser id, type of products,...)
+    User features, for instance browser type;
+    Interaction of the user with the advertiser, such as the number of the times the user visited the advertiser website.
+
+
+ ----P(click | category):
+I am not using a logit; it's simpler than that: I simply take, for a given category: #positives_when_category_was_active/#total_times_category_was_active  for each category over the entire dataset.  I then stuffed that into a dict and query the dict to convert category into float for each for the 26 categorical features for each sample. (Keep in mind that there are 26 categorical features yet many categories for each categorical feature.  These probabilities are calculated by category).  
+
+
+-Faster random forest training
+     - Less Features
+     - Better than just throwing in categorical features in arbitrary order since           the ordering makes splits more meaningful i.e. splitting a variable                means the samples above the split are more likely to be clicked                   and the samples below are less likely to be clicked
+-Can use scikit learn RFC (it only works on dense matrices)
+-Easy to visualize the features - allowed me to notice trends in the features ( this was how I noticed that there might be a DailyTemporalMean in the first place )
+-Easy to notice that some features basically track the DailyTemporalMean but others oppose it and even do crazy shit on some days!  We should talk about this more later - we might want to exclude some categorical features if they behave in strange / unexpected ways.
+-Easy to use period in other algorithms since the features are all numerical; it's a more common format for features
+
+
+ ----DAILY TEMPORAL MEAN:
+It's TOTALLY true that the DailyTemporalMean looks very similar every day.  Yes, I think it would be an excellent idea to try to just insert this as a feature and let the learning algorithm decide what to do with it.  We do, though, have to be careful about getting this from the training data, as it is the Y block!  Might have to train on one day, get the DailyTemporalMean from all the other days.  I noticed in the forums that training on Day 7 gets better results than training on Day 1, so maybe train on Day 7 with the Daily Temporal mean from Days 1-6?
+
+One other way I was thinking about using it is to "mix" it with the predictions on the test set -
+make the final predictions = alpha*initial_predictions + (1-alpha)*DailyTemporalMean.  This might help constrain the predictions in a sensible way.
+
+
+
+
+
+
